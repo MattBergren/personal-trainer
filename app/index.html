@@ -2,7 +2,7 @@
 <html class="no-js">
   <head>
     <meta charset="utf-8">
-    <title></title>
+    <title>Guess the Number!</title>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width">
     <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
@@ -15,15 +15,24 @@
     <link rel="stylesheet" href="styles/main.css">
     <!-- endbuild -->
   </head>
-  <body ng-app="moviemaniaApp">
+  <body ng-app="app">
     <!--[if lt IE 7]>
       <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
     <![endif]-->
 
     <!-- Add your site or application content here -->
-    <div class="container">
-      
-
+    <div class="container" ng-controller="GuessTheNumberController">
+        <h2>Guess the Number !</h2>
+        <p class="well lead">Guess the computer generated random number between 1 and 1000.</p>
+        <label>Your Guess: </label><input type="number" ng-model="guess"/>
+        <button ng-click="verifyGuess()" class="btn btn-primary btn-sm">Verify</button>
+        <button ng-click="initializeGame()" class="btn btn-warning btn-sm">Restart</button>
+        <div>
+            <p ng-show="deviation<0" class="alert alert-warning">Your guess is higher.</p>
+            <p ng-show="deviation>0" class="alert alert-warning">Your guess is lower.</p>
+            <p ng-show="deviation===0" class="alert alert-success">Yes! That"s it.</p>
+        </div>
+         <p class="text-info">No of guesses : <span class="badge">{{noOfTries}}</span><p>
       
 
       
@@ -53,5 +62,24 @@
         <script src="scripts/controllers/main.js"></script>
         <script src="scripts/controllers/about.js"></script>
         <!-- endbuild -->
+        <script>
+        angular.module('app',[])
+            .controller('GuessTheNumberController', GuessTheNumberController);
+            function GuessTheNumberController($scope) {
+                $scope.verifyGuess = function () {
+                    $scope.deviation = $scope.original - $scope.guess;
+                    $scope.noOfTries = $scope.noOfTries + 1;
+                }
+                $scope.initializeGame = function () {
+                    $scope.noOfTries = 0;
+                    $scope.original = Math.floor((Math.random() * 1000) + 1);
+                    $scope.guess = null;
+                    $scope.deviation = null;
+                }
+                $scope.initializeGame();
+                console.log($scope.original);
+            }
+
+        </script>
 </body>
 </html>
