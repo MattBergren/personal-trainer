@@ -3,12 +3,20 @@
 /* Controllers */
 
 angular.module('7minWorkout')
-  .controller('WorkoutController', ['$scope', '$interval', function ($scope, $interval) {
+  .controller('WorkoutController', ['$scope', '$interval', '$location', function ($scope, $interval, $location) {
       function WorkoutPlan(args) {
           this.exercises = [];
           this.name = args.name;
           this.title = args.title;
           this.restBetweenExercise = args.restBetweenExercise;
+          this.totalWorkoutDuration = function () {
+              if (this.exercises.length == 0) return 0;
+              var total = 0;
+              angular.forEach(this.exercises, function (exercise) {
+                  total = total + exercise.duration;
+              });
+              return this.restBetweenExercise * (this.exercises.length - 1) + total;
+          }
       };
 
       function Exercise(args) {
@@ -23,9 +31,9 @@ angular.module('7minWorkout')
       }
 
       var restExercise;
-      var workoutPlan;
       var startWorkout = function () {
-          workoutPlan = createWorkout();
+          $scope.workoutPlan = createWorkout();
+          $scope.workoutTimeRemaining = $scope.workoutPlan.totalWorkoutDuration();
           restExercise = {
               details: new Exercise({
                   name: "rest",
@@ -33,9 +41,12 @@ angular.module('7minWorkout')
                   description: "Relax a bit!",
                   image: "images/rest.png",
               }),
-              duration: workoutPlan.restBetweenExercise
+              duration: $scope.workoutPlan.restBetweenExercise
           };
-          startExercise(workoutPlan.exercises.shift());
+          $interval(function () {
+            $scope.workoutTimeRemaining = $scope.workoutTimeRemaining - 1;
+          }, 1000, $scope.workoutTimeRemaining);
+          startExercise($scope.workoutPlan.exercises.shift());
       };
 
      
@@ -51,7 +62,7 @@ angular.module('7minWorkout')
             if (next) {
               startExercise(next);
             } else {
-              console.log("Workout complete!")
+              $location.path('/finish');
             }
           });
 
@@ -90,7 +101,7 @@ angular.module('7minWorkout')
                               Then, keeping your back against the wall, lower your hips until your knees form right angles. "
               }),
               duration: 30
-          });
+          });/*
           workout.exercises.push({
               details: new Exercise({
                   name: "pushUp",
@@ -230,16 +241,16 @@ angular.module('7minWorkout')
                               Keep your hips square and your neck in line with your spine. Hold the position."
               }),
               duration: 30
-          });
+          });*/
           return workout;
       }
 
       var getNextExercise = function (currentExercisePlan) {
          var nextExercise = null;
          if (currentExercisePlan === restExercise) {
-             nextExercise = workoutPlan.exercises.shift();
+             nextExercise = $scope.workoutPlan.exercises.shift();
          } else {
-             if (workoutPlan.exercises.length != 0) {
+             if ($scope.workoutPlan.exercises.length != 0) {
                  nextExercise = restExercise;
              }
          }
